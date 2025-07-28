@@ -1,0 +1,60 @@
+[gd_scene load_steps=8 format=3 uid="uid://cxqls7u3k34do"]
+
+[ext_resource type="Script" uid="uid://d4aqirp2lyda6" path="res://motor.gd" id="1_i7gy5"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_t2f1g"]
+albedo_color = Color(0, 0, 0, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_i7gy5"]
+material = SubResource("StandardMaterial3D_t2f1g")
+top_radius = 0.05
+bottom_radius = 0.05
+height = 0.02
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ocnpv"]
+albedo_color = Color(0.639206, 0.639206, 0.639206, 1)
+metallic = 1.0
+metallic_specular = 0.75
+roughness = 0.81
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_xbv7l"]
+material = SubResource("StandardMaterial3D_ocnpv")
+top_radius = 0.004
+bottom_radius = 0.004
+height = 0.004
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_i7gy5"]
+albedo_color = Color(0.277528, 0.277528, 0.277528, 1)
+metallic_specular = 0.65
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_ys34s"]
+material = SubResource("StandardMaterial3D_i7gy5")
+size = Vector3(0.3, 0.001, 0.03)
+
+[node name="Motor" type="Node3D"]
+script = ExtResource("1_i7gy5")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("CylinderMesh_i7gy5")
+
+[node name="RotatingPiece" type="Node3D" parent="."]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="RotatingPiece"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.012167, 0)
+mesh = SubResource("CylinderMesh_xbv7l")
+
+[node name="Helix" type="Node3D" parent="RotatingPiece"]
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="RotatingPiece/Helix"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.150083, 0.014175, 0)
+mesh = SubResource("BoxMesh_ys34s")
+skeleton = NodePath("../..")
+
+[node name="Helix2" type="Node3D" parent="RotatingPiece"]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="RotatingPiece/Helix2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.150083, 0.014175, 0)
+mesh = SubResource("BoxMesh_ys34s")
+skeleton = NodePath("../..")
