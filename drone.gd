@@ -7,7 +7,7 @@ var motors
 var up_speed = 5
 var up_acceleration = 0.1
 var down_speed = 3
-var down_acceleration = 0.5
+var down_acceleration = 0.2
 var vertical_deceleration = 0.9
 var yaw_speed = 1
 var current_yaw_speed = 0
@@ -24,7 +24,7 @@ var left_speed = 10
 var left_acceleration = 0.1
 var roll_deceleration = 0.9
 
-var break_speed = Vector3(0, 0.1, 0)
+var break_speed = Vector3(0, 0.9, 0)
 var home_point = Vector3.ZERO
 var relative_height = 0
 
@@ -36,9 +36,9 @@ func _process(delta: float) -> void:
 	direction.y = 0
 	var norm_direction = direction.normalized()
 	
-	var right_direction = norm_direction.cross(Vector3.UP)
-	var yaw = basis.get_euler().y
-	$Model.basis = Basis(Vector3.UP, yaw)#.rotated(right_direction, clamp(direction.length(), -0.2, 0.2))
+	var yaw = self.global_rotation.y
+	var right_direction = norm_direction.cross(Vector3.UP).rotated(Vector3.UP, yaw)
+	$Model.basis = Basis().rotated(right_direction, clamp(direction.length(), -0.2, 0.2))
 	
 	if landed:
 		if Input.is_action_pressed("throttle_up"):
