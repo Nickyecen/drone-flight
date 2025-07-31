@@ -1,7 +1,6 @@
-[gd_scene load_steps=6 format=3 uid="uid://derhc1u780uss"]
+[gd_scene load_steps=5 format=3 uid="uid://derhc1u780uss"]
 
 [ext_resource type="PackedScene" uid="uid://mqinrbglnabd" path="res://drone.tscn" id="1_f3sb7"]
-[ext_resource type="Script" uid="uid://bx0nx1cygobex" path="res://camera_3d.gd" id="2_fj7yv"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gv5m4"]
 albedo_color = Color(0, 0.317647, 0, 1)
@@ -27,10 +26,6 @@ shape = SubResource("ConvexPolygonShape3D_f3sb7")
 
 [node name="Drone" parent="." instance=ExtResource("1_f3sb7")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.10808, 0)
-
-[node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(0.0399575, 0.343484, -0.938308, 0, 0.939058, 0.343758, 0.999201, -0.0137357, 0.0375224, -33.5124, 19.7855, 0)
-script = ExtResource("2_fj7yv")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.643322, 0.765595, 0, -0.765595, 0.643322, 0, 27.8934, 52.1804)
