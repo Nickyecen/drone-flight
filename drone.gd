@@ -4,8 +4,8 @@ var landed = true
 var takeoff_threshold = 10
 var motors
 
-var up_speed = 5
-var down_speed = 3
+var up_speed = 2
+var down_speed = 1.5
 
 var yaw_speed = 1
 var current_yaw_speed = 0
@@ -36,7 +36,7 @@ func _process(delta: float) -> void:
 	direction.y = 0
 	var norm_direction = direction.normalized()
 	
-	if landed:
+	if landed: # Prepares takeoff
 		if Input.is_action_pressed("throttle_up"):
 			for motor in motors:
 				motor.throttle += 3*delta
@@ -48,14 +48,17 @@ func _process(delta: float) -> void:
 				motor.throttle -= delta
 
 func _physics_process(delta: float) -> void:
-	var acceleration = 0*get_gravity()
+	var acceleration = get_gravity()
 	if not landed:
+		# Change acceleration based on input
 		acceleration += control(delta)
+		print("Acceleration: " + str(acceleration))
 	
+		# Limits speed
 		if self.velocity.y + acceleration.y*delta > up_speed:
 			self.velocity.y = up_speed
 		elif self.velocity.y + acceleration.y*delta < -down_speed:
-			self.velocity.y = down_speed
+			self.velocity.y = -down_speed
 		else:
 			self.velocity += acceleration*delta
 	
@@ -63,9 +66,13 @@ func _physics_process(delta: float) -> void:
 
 func control(delta):
 	var acceleration = Vector3.ZERO
+	
 	handle_throttle_input()
 	var y_acceleration = handle_vertical_movement(delta)
+	if y_acceleration < 0: # Can't accelerate downward
+		y_acceleration = 0
 	acceleration.y += y_acceleration
+	
 	return acceleration
 
 func handle_vertical_movement(delta):
@@ -75,7 +82,7 @@ func handle_vertical_movement(delta):
 
 func handle_throttle_input():
 	if Input.is_action_pressed("throttle_up"):
-		desired_height = 20#global_position.y + 1
+		desired_height = global_position.y + 4
 	elif Input.is_action_pressed("throttle_down"):
 		desired_height = global_position.y - 1
 	
