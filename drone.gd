@@ -7,10 +7,9 @@ var motors
 var up_speed = 2
 var down_speed = 1.5
 
-var yaw_speed = 1
+var yaw_speed = 0.5
 var current_yaw_speed = 0
-var yaw_acceleration = 0.8
-var yaw_deceleration = 6
+
 var forward_speed = 10
 var forward_acceleration = 0.1
 var backward_speed = 10
@@ -23,6 +22,7 @@ var left_acceleration = 0.1
 var roll_deceleration = 0.9
 
 var desired_height = 0
+var desired_yaw = 0
 
 var break_speed = Vector3(0, 0.9, 0)
 var home_point = Vector3.ZERO
@@ -68,6 +68,9 @@ func control(delta):
 	var acceleration = Vector3.ZERO
 	
 	handle_throttle_input()
+	handle_yaw_input(delta)
+	#handle_pitch_input()
+	
 	var y_acceleration = handle_vertical_movement(delta)
 	if y_acceleration < 0: # Can't accelerate downward
 		y_acceleration = 0
@@ -76,9 +79,18 @@ func control(delta):
 	return acceleration
 
 func handle_vertical_movement(delta):
-	print("Desired: " + str(desired_height))
-	print("Current: " + str(self.position.y))
-	return $PID.handle_movement(desired_height - self.position.y, delta)
+	#print("Desired: " + str(desired_height))
+	#print("Current: " + str(self.position.y))
+	return $Y_PID.handle_movement(desired_height - self.position.y, delta)
+
+func handle_yaw_input(delta):
+	if Input.is_action_pressed("yaw_left"):
+		self.rotate(Vector3.UP, yaw_speed * delta)
+	elif Input.is_action_pressed("yaw_right"):
+		self.rotate(Vector3.UP, -yaw_speed * delta)
+	
+	if Input.is_action_just_released("yaw_right") or Input.is_action_just_released("yaw_left"):
+		desired_yaw = basis.get_euler().y
 
 func handle_throttle_input():
 	if Input.is_action_pressed("throttle_up"):
