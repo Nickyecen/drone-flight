@@ -23,6 +23,8 @@ var roll_deceleration = 0.9
 
 var desired_height = 0
 var desired_yaw = 0
+var desired_position_pitch = Vector3.ZERO
+var desired_position_roll = Vector3.ZERO
 
 var break_speed = Vector3(0, 0.9, 0)
 var home_point = Vector3.ZERO
@@ -52,7 +54,6 @@ func _physics_process(delta: float) -> void:
 	if not landed:
 		# Change acceleration based on input
 		acceleration += control(delta)
-		print("Acceleration: " + str(acceleration))
 	
 		# Limits speed
 		if self.velocity.y + acceleration.y*delta > up_speed:
@@ -69,19 +70,74 @@ func control(delta):
 	
 	handle_throttle_input()
 	handle_yaw_input(delta)
-	#handle_pitch_input()
+	handle_pitch_input()
+	handle_roll_input()
 	
 	var y_acceleration = handle_vertical_movement(delta)
 	if y_acceleration < 0: # Can't accelerate downward
 		y_acceleration = 0
 	acceleration.y += y_acceleration
 	
+	var pitch_acceleration = handle_pitch_movement(delta)
+	acceleration += -pitch_acceleration*basis.z
+	
+	var roll_acceleration = handle_roll_movement(delta)
+	acceleration += roll_acceleration*basis.x
+	
 	return acceleration
+
+func handle_pitch_movement(delta):
+	#print("Desired: " + str(desired_position_pitch))
+	#print("Current: " + str(self.position))
+	var forward = -basis.z
+	
+	var pos = position
+	pos.y = 0
+	desired_position_pitch.y = 0
+	
+	var delta_pos = forward.dot(desired_position_pitch - pos)
+	
+	return $Pitch_PID.handle_movement(delta_pos, delta)
+
+func handle_roll_movement(delta):
+	print("Desired: " + str(desired_position_roll))
+	print("Current: " + str(self.position))
+	var right = basis.x
+	
+	var pos = position
+	pos.y = 0
+	desired_position_roll.y = 0
+	
+	var delta_pos = right.dot(desired_position_roll - pos)
+	
+	return $Roll_PID.handle_movement(delta_pos, delta)
 
 func handle_vertical_movement(delta):
 	#print("Desired: " + str(desired_height))
 	#print("Current: " + str(self.position.y))
 	return $Y_PID.handle_movement(desired_height - self.position.y, delta)
+
+func handle_pitch_input():
+	var forward = -basis.z
+	
+	if Input.is_action_pressed("forward"):
+		desired_position_pitch = global_position + forward
+	elif Input.is_action_pressed("backward"):
+		desired_position_pitch = global_position - forward
+	
+	if Input.is_action_just_released("forward") or Input.is_action_just_released("backward"):
+		desired_position_pitch = global_position
+
+func handle_roll_input():
+	var right = basis.x
+	
+	if Input.is_action_pressed("right"):
+		desired_position_roll = global_position + right
+	elif Input.is_action_pressed("left"):
+		desired_position_roll = global_position - right
+	
+	if Input.is_action_just_released("right") or Input.is_action_just_released("left"):
+		desired_position_pitch = global_position
 
 func handle_yaw_input(delta):
 	if Input.is_action_pressed("yaw_left"):
