@@ -24,11 +24,6 @@ var left_speed = 10
 var left_acceleration = 0.1
 var roll_deceleration = 0.9
 
-var desired_height = 0
-var desired_yaw = 0
-var desired_position_pitch = Vector3.ZERO
-var desired_position_roll = Vector3.ZERO
-
 var desired_position = Vector3.ZERO
 
 var break_speed = Vector3(0, 0.9, 0)
@@ -68,7 +63,29 @@ func _physics_process(delta: float) -> void:
 		elif self.velocity.y < -down_speed:
 			self.velocity.y = -down_speed
 	
+	tilt(acceleration, delta)
+	
 	self.move_and_slide()
+
+func tilt(acceleration, delta):
+	# Assume you want to tilt based on velocity
+	var tilt_strength = 0.1
+	var max_tilt_angle = PI/8
+
+	var forward_acc = acceleration.dot(-basis.z)
+	var right_acc = acceleration.dot(basis.x)
+	var target_pitch = clamp(-forward_acc * tilt_strength, -max_tilt_angle, max_tilt_angle)
+	var target_roll  = clamp(-right_acc * tilt_strength, -max_tilt_angle, max_tilt_angle)
+
+	var target_rotation = Vector3(target_pitch, 0, target_roll)
+
+	var current_rotation = $Model.rotation
+	var new_rotation = Vector3(
+		lerp_angle(current_rotation.x, target_rotation.x, delta * 5),
+		current_rotation.y,  # Keep yaw unchanged
+		lerp_angle(current_rotation.z, target_rotation.z, delta * 5)
+	)
+	$Model.rotation = new_rotation
 
 func control(delta):
 	var acceleration = Vector3.ZERO

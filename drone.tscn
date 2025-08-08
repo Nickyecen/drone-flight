@@ -1,16 +1,19 @@
-[gd_scene load_steps=7 format=3 uid="uid://mqinrbglnabd"]
+[gd_scene load_steps=8 format=3 uid="uid://mqinrbglnabd"]
 
 [ext_resource type="Script" uid="uid://bjfhfjkxh5wyj" path="res://drone.gd" id="1_d5du7"]
 [ext_resource type="PackedScene" uid="uid://cxqls7u3k34do" path="res://motor.tscn" id="1_uvgqj"]
+[ext_resource type="Material" uid="uid://b3chrbvwntbsr" path="res://drone_material.tres" id="3_30i2v"]
 [ext_resource type="PackedScene" uid="uid://buwhj4jkybg73" path="res://pid.tscn" id="3_puw62"]
 
 [sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_uvgqj"]
 points = PackedVector3Array(-0.15, -0.05, -0.15, -0.15, 0.05, -0.15, 0.15, -0.05, -0.15, -0.15, -0.05, 0.15, -0.15, 0.05, 0.15, 0.15, 0.05, -0.15, 0.15, -0.05, 0.15, 0.15, 0.05, 0.15)
 
 [sub_resource type="BoxMesh" id="BoxMesh_etgmo"]
+material = ExtResource("3_30i2v")
 size = Vector3(0.3, 0.1, 0.3)
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_d5du7"]
+material = ExtResource("3_30i2v")
 top_radius = 0.03
 bottom_radius = 0.03
 height = 0.5
