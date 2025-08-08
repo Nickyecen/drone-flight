@@ -24,12 +24,12 @@ k_p = 3.0
 k_i = 1.0
 k_d = 2.8
 
-[node name="Pitch_PID" parent="." instance=ExtResource("3_puw62")]
+[node name="X_PID" parent="." instance=ExtResource("3_puw62")]
 k_p = 1.0
 k_i = 0.0
 k_d = 2.0
 
-[node name="Roll_PID" parent="." instance=ExtResource("3_puw62")]
+[node name="Z_PID" parent="." instance=ExtResource("3_puw62")]
 k_p = 1.0
 k_i = 0.0
 k_d = 2.0

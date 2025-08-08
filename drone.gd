@@ -4,6 +4,9 @@ var landed = true
 var takeoff_threshold = 10
 var motors
 
+var max_acceleration_vert = 20
+var max_acceleration_hor = 10
+
 var up_speed = 2
 var down_speed = 1.5
 
@@ -25,6 +28,8 @@ var desired_height = 0
 var desired_yaw = 0
 var desired_position_pitch = Vector3.ZERO
 var desired_position_roll = Vector3.ZERO
+
+var desired_position = Vector3.ZERO
 
 var break_speed = Vector3(0, 0.9, 0)
 var home_point = Vector3.ZERO
@@ -55,104 +60,116 @@ func _physics_process(delta: float) -> void:
 		# Change acceleration based on input
 		acceleration += control(delta)
 	
+		self.velocity += acceleration*delta
+		
 		# Limits speed
-		if self.velocity.y + acceleration.y*delta > up_speed:
+		if self.velocity.y > up_speed:
 			self.velocity.y = up_speed
-		elif self.velocity.y + acceleration.y*delta < -down_speed:
+		elif self.velocity.y < -down_speed:
 			self.velocity.y = -down_speed
-		else:
-			self.velocity += acceleration*delta
 	
 	self.move_and_slide()
 
 func control(delta):
 	var acceleration = Vector3.ZERO
 	
-	handle_throttle_input()
-	handle_yaw_input(delta)
-	handle_pitch_input()
-	handle_roll_input()
+	handle_input(delta)
+
+	acceleration = handle_movement(delta)
 	
-	var y_acceleration = handle_vertical_movement(delta)
-	if y_acceleration < 0: # Can't accelerate downward
-		y_acceleration = 0
-	acceleration.y += y_acceleration
+	if acceleration.y < 0: # Can't accelerate downward
+		acceleration.y = 0
+	elif acceleration.y > max_acceleration_vert:
+		acceleration.y = max_acceleration_vert
 	
-	var pitch_acceleration = handle_pitch_movement(delta)
-	acceleration += -pitch_acceleration*basis.z
-	
-	var roll_acceleration = handle_roll_movement(delta)
-	acceleration += roll_acceleration*basis.x
+	var hor_acceleration = Vector2(acceleration.x, acceleration.z)
+	if hor_acceleration.length() > max_acceleration_hor:
+		var new_hor_acceleration = max_acceleration_hor * hor_acceleration.normalized()
+		acceleration.x = new_hor_acceleration.x
+		acceleration.z = new_hor_acceleration.y
 	
 	return acceleration
 
-func handle_pitch_movement(delta):
-	#print("Desired: " + str(desired_position_pitch))
-	#print("Current: " + str(self.position))
-	var forward = -basis.z
+func handle_input(delta):
+	handle_yaw_input(delta)
 	
-	var pos = position
-	pos.y = 0
-	desired_position_pitch.y = 0
+	var throttle_pos = handle_throttle_input()
+	var pitch_pos = handle_pitch_input()
+	var roll_pos = handle_roll_input()
 	
-	var delta_pos = forward.dot(desired_position_pitch - pos)
+	var new_desired_position = Vector3.ZERO
+	var drone_coord_position = position.rotated(Vector3.DOWN, basis.get_euler().y)
+	var drone_coord_desired_pos = desired_position.rotated(Vector3.DOWN, basis.get_euler().y)
 	
-	return $Pitch_PID.handle_movement(delta_pos, delta)
+	if throttle_pos != null:
+		new_desired_position.y = drone_coord_position.y + throttle_pos
+	else:
+		new_desired_position.y = drone_coord_desired_pos.y
+	
+	if pitch_pos != null:
+		new_desired_position.z = drone_coord_position.z - pitch_pos
+	else:
+		new_desired_position.z = drone_coord_desired_pos.z
+		
+	if roll_pos != null:
+		new_desired_position.x = drone_coord_position.x + roll_pos
+	else:
+		new_desired_position.x = drone_coord_desired_pos.x
+	
+	desired_position = new_desired_position.rotated(Vector3.UP, basis.get_euler().y)
 
-func handle_roll_movement(delta):
-	print("Desired: " + str(desired_position_roll))
-	print("Current: " + str(self.position))
-	var right = basis.x
+func handle_movement(delta):
+	var delta_pos = desired_position - position
 	
-	var pos = position
-	pos.y = 0
-	desired_position_roll.y = 0
+	var delta_height = delta_pos.y
+	var delta_hor_pos = delta_pos
+	delta_hor_pos.y = 0
 	
-	var delta_pos = right.dot(desired_position_roll - pos)
+	var acceleration = Vector3.ZERO
 	
-	return $Roll_PID.handle_movement(delta_pos, delta)
-
-func handle_vertical_movement(delta):
-	#print("Desired: " + str(desired_height))
-	#print("Current: " + str(self.position.y))
-	return $Y_PID.handle_movement(desired_height - self.position.y, delta)
+	acceleration.x = $X_PID.handle_movement(delta_hor_pos.x, delta)
+	acceleration.z = $Z_PID.handle_movement(delta_hor_pos.z, delta)
+	acceleration.y = $Y_PID.handle_movement(delta_height, delta)
+	
+	return acceleration
 
 func handle_pitch_input():
-	var forward = -basis.z
-	
 	if Input.is_action_pressed("forward"):
-		desired_position_pitch = global_position + forward
+		return 1
 	elif Input.is_action_pressed("backward"):
-		desired_position_pitch = global_position - forward
+		return -1
 	
 	if Input.is_action_just_released("forward") or Input.is_action_just_released("backward"):
-		desired_position_pitch = global_position
+		return 0
+	
+	return null
 
 func handle_roll_input():
 	var right = basis.x
 	
 	if Input.is_action_pressed("right"):
-		desired_position_roll = global_position + right
+		return 1
 	elif Input.is_action_pressed("left"):
-		desired_position_roll = global_position - right
+		return -1
 	
 	if Input.is_action_just_released("right") or Input.is_action_just_released("left"):
-		desired_position_pitch = global_position
+		return 0
+	
+	return null
 
 func handle_yaw_input(delta):
 	if Input.is_action_pressed("yaw_left"):
 		self.rotate(Vector3.UP, yaw_speed * delta)
 	elif Input.is_action_pressed("yaw_right"):
 		self.rotate(Vector3.UP, -yaw_speed * delta)
-	
-	if Input.is_action_just_released("yaw_right") or Input.is_action_just_released("yaw_left"):
-		desired_yaw = basis.get_euler().y
 
 func handle_throttle_input():
 	if Input.is_action_pressed("throttle_up"):
-		desired_height = global_position.y + 4
+		return 3
 	elif Input.is_action_pressed("throttle_down"):
-		desired_height = global_position.y - 1
+		return -1
 	
 	if Input.is_action_just_released("throttle_up") or Input.is_action_just_released("throttle_down"):
-		desired_height = global_position.y
+		return 0
+	
+	return null

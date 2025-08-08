@@ -1,6 +1,7 @@
-[gd_scene load_steps=7 format=3 uid="uid://derhc1u780uss"]
+[gd_scene load_steps=8 format=3 uid="uid://derhc1u780uss"]
 
 [ext_resource type="PackedScene" uid="uid://mqinrbglnabd" path="res://drone.tscn" id="1_f3sb7"]
+[ext_resource type="Script" uid="uid://2pbwaq77xbne" path="res://label.gd" id="2_fj7yv"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gv5m4"]
 albedo_color = Color(0, 0.317647, 0, 1)
@@ -43,3 +44,8 @@ mesh = SubResource("BoxMesh_f3sb7")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
 shape = SubResource("ConvexPolygonShape3D_fj7yv")
+
+[node name="Label" type="Label" parent="."]
+offset_right = 40.0
+offset_bottom = 23.0
+script = ExtResource("2_fj7yv")
